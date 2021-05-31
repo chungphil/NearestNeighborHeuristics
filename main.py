@@ -74,21 +74,20 @@ def nearest_neighbour_heuristic(px, py, demand, capacity, depot):
         cap = capacity #100
         selNode = depot
 
-        while (cap>0):
+        while (cap>0): # while vehicle has capacity
             ascEuc = np.unique(eMat[selNode]) #eucDistanc in ascending order
 
-            for i in ascEuc: # create the boolean of bestNNH
+            for i in ascEuc: # for each h value starting with lowest
                 indexList = np.where(i == eMat[selNode])[0]
-
-
                 indexNo = np.where(i == eMat[selNode])[0][0]
-                if indexNo in visitedNodes:
-                    continue
-                else:
-                    dc = (demand[indexNo] <= cap) #check T of F whether demand is less than cap
-                #nodeStat = (indexNo in visitedNodes) # T if index visited
+                if len(indexList) > 1:
+                    for j in indexList:
+                        if j not in visitedNodes:
+                            indexNo = j
+                        else:
+                            continue
 
-                if (dc == True): #& (nodeStat == False):
+                if (indexNo not in visitedNodes) & (demand[indexNo] <= cap):
                     visitedNodes.append(indexNo)
                     oneRoute.append(indexNo)
                     cap -= demand[indexNo]
