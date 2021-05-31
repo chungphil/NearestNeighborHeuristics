@@ -62,19 +62,35 @@ def nearest_neighbour_heuristic(px, py, demand, capacity, depot):
     """
 
     # TODO - Implement the Nearest Neighbour Heuristic to generate VRP solutions.
-
+    Len = len(capacity)
     routes = []
     eMat = utility.euclidean_matrix(px,py)
 
-    nodesLeft = len(capacity) - 1 #31
+    nodesLeft = Len - 1 #31
+    visitedNodes = [depot]
 
-    while (nodesLeft>=0):
+    while len(visitedNodes)< Len: # loop runs while nodes left to be visited
         oneRoute = []
         cap = capacity #100
-        fInd = np.where(eMat[0] == eMat[0,1:].min())[0][0] #index of min h value
-        cap -= demand[fInd] # take demand away from capacity
+
+        selNode = depot
         while (cap>0):
-            oneRoute.append(fInd)
+            ascEuc = np.unique(eMat[selNode]) #eucDistanc in ascending order
+            bestNNH = np.zeros(Len)
+            for i in ascEuc: # create the boolean of bestNNH
+                indexNo = np.where(ascEuc[i] == eMat[selNode])[0][0]
+                dc = demand[indexNo] < capacity #check T of F whether demand is less than cap
+                nodeStat = (indexNo in visitedNodes) # T if index visited
+
+                if (dc == True) & (nodeStat == False):
+                    bestNNH[indexNo] = True
+            indNNH = np.where(bestNNH == True)[0][0]
+            visitedNodes.append(indNNH)
+            oneRoute.append(indNNH)
+            cap -= demand[indNNH]
+            selNode = indNNH
+
+        routes.append(oneRoute)
 
 
 
@@ -94,7 +110,6 @@ def savings_heuristic(px, py, demand, capacity, depot):
     :return: List of vehicle routes (tours).
     """
 
-    # TODO - Implement the Saving Heuristic to generate VRP solutions.
 
     return None
 
