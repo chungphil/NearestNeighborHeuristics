@@ -11,8 +11,8 @@ import utility
 def main():
 
     # Paths to the data and solution files.
-    vrp_file = "n80-k10.vrp"  # "data/n80-k10.vrp"
-    sol_file = "n80-k10.sol"  # "data/n80-k10.sol"
+    vrp_file = "n32-k5.vrp"  # "data/n80-k10.vrp"
+    sol_file = "n32-k5.sol"  # "data/n80-k10.sol"
 
     # Loading the VRP data file.
     px, py, demand, capacity, depot = loader.load_data(vrp_file)
@@ -25,24 +25,26 @@ def main():
     # print(np.sum(demand))
     # print(depot)
 
+
     # Displaying to console the distance and visualizing the optimal VRP solution.
-    vrp_best_sol = loader.load_solution(sol_file)
-    best_distance = utility.calculate_total_distance(vrp_best_sol, px, py, depot)
-    print("Best VRP Distance:", best_distance)
-    utility.visualise_solution(vrp_best_sol, px, py, depot, "Optimal Solution")
+    # vrp_best_sol = loader.load_solution(sol_file)
+    # best_distance = utility.calculate_total_distance(vrp_best_sol, px, py, depot)
+    # print("Best VRP Distance:", best_distance)
+    # utility.visualise_solution(vrp_best_sol, px, py, depot, "Optimal Solution")
 
     # Executing and visualizing the nearest neighbour VRP heuristic.
     # Uncomment it to do your assignment!
 
-    nnh_solution = nearest_neighbour_heuristic(px, py, demand, capacity, depot)
-    nnh_distance = utility.calculate_total_distance(nnh_solution, px, py, depot)
-    print("Nearest Neighbour VRP Heuristic Distance:", nnh_distance)
-    utility.visualise_solution(nnh_solution, px, py, depot, "Nearest Neighbour Heuristic")
+    # nnh_solution = nearest_neighbour_heuristic(px, py, demand, capacity, depot)
+    # nnh_distance = utility.calculate_total_distance(nnh_solution, px, py, depot)
+    # print("Nearest Neighbour VRP Heuristic Distance:", nnh_distance)
+    # utility.visualise_solution(nnh_solution, px, py, depot, "Nearest Neighbour Heuristic")
 
     # Executing and visualizing the saving VRP heuristic.
     # Uncomment it to do your assignment!
     
     sh_solution = savings_heuristic(px, py, demand, capacity, depot)
+    print(sh_solution)
     sh_distance = utility.calculate_total_distance(sh_solution, px, py, depot)
     print("Saving VRP Heuristic Distance:", sh_distance)
     utility.visualise_solution(sh_solution, px, py, depot, "Savings Heuristic")
@@ -120,16 +122,83 @@ def savings_heuristic(px, py, demand, capacity, depot):
     :return: List of vehicle routes (tours).
     """
     sMat = utility.savings_matrix(px,py, depot) # 32 x 32, depot not taken out.
-    bestSave = np.unique(sMat)[::-1]
+    bestSave = np.unique(sMat) # list of best saving
+    visitedNodes = [depot]
 
-    allroutes = [] #list of lists [[][]] with index numbers.
+    allroutes = [] #list of lists [[][]] with [depot,index numbers,depot].
     for i in range(len(px)):
         if i == depot:
             continue
         else:
-            allroutes.append([i])
+            allroutes.append([depot,i,depot])
 
-    return None
+    while(True):
+
+        #identify best saving from bestSave
+        firstSaving = np.where(sMat == bestSave.max())
+        head = firstSaving[0][0]
+        tail = firstSaving[1][0]
+        headloc = 0
+        tailloc = 0
+        #something to check whether head and tail in same group already
+        #location in allroutes of head and tail
+        for i in range(len(allroutes)):
+            if head in allroutes[i]:
+                headloc = i
+            if tail in allroutes[i]:
+                tailloc = i
+
+        #check demand of head and tail
+        demC = 0
+
+        for i in allroutes[headloc]:
+            demC += demand[i]
+        for i in allroutes[tailloc]:
+            demC += demand[i]
+
+        #if demand does not exceed capacity, proceed with adding
+        if demC <= capacity:
+            # append two links head to tail
+            allroutes[headloc] = allroutes[headloc][:-1] + allroutes[tailloc][1:]
+            for i in allroutes[headloc]:
+                if i ==0:
+                    continue
+                else:
+                    for j in allroutes[headloc]:
+                        if j==0:
+                            continue
+                        else:
+                            sMat[i,j] = 0
+            allroutes.remove(allroutes[tailloc])
+            #delete head row in sMat
+            sMat[head,:] = 0
+            sMat[tail,head] = 0
+            #delete tail column in sMat
+            sMat[:,tail] = 0
+            sMat[head,tail] = 0
+
+            bestSave = np.unique(sMat)
+        else:
+            sMat[head,tail] =0
+            sMat[tail,head] =0
+            bestSave = np.unique(sMat)
+
+        # for each list in allroutes, check if 2 smallest cumulative demand of lists are over 100. stop loop
+        routedem = []
+        for i in allroutes:
+            dem=0
+            for j in i:
+                dem += demand[j]
+            routedem.append(dem)
+        A, B = sorted(routedem)[:2]
+        if (A + B) > 100:
+            break
+
+
+    for i in range(len(allroutes)):
+        allroutes[i]= allroutes[i][1:-1]
+
+    return np.array(allroutes,dtype=object)
 
 
 if __name__ == '__main__':

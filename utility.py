@@ -44,6 +44,8 @@ def savings_matrix(px,py, depot):
         for j in range(len(savingMat)):
             if j == i:
                 savingMat[i, j] = 0
+    # savingMat = np.delete(savingMat, depot, 0)
+    # savingMat = np.delete(savingMat, depot, 1)
 
     return savingMat
 
