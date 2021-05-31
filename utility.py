@@ -48,8 +48,19 @@ def calculate_total_distance(routes, px, py, depot):
     """
 
     # TODO - Implement function for finding the total euclidean distance of the learned tour.
+    eucMat = euclidean_matrix(px,py)
+    totalDist = 0
+    for i in routes:
+        totalDist += eucMat[i[0],depot]
+        totalDist += eucMat[i[-1], depot]
+        for j in range(len(i)):
+            if j == 0:
+                continue
+            else:
+                totalDist += eucMat[i[j],i[j-1]]
 
-    return None
+
+    return totalDist
 
 
 def visualise_solution(vrp_sol, px, py, depot, title):

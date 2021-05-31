@@ -34,10 +34,10 @@ def main():
     # Executing and visualizing the nearest neighbour VRP heuristic.
     # Uncomment it to do your assignment!
 
-    # nnh_solution = nearest_neighbour_heuristic(px, py, demand, capacity, depot)
-    # nnh_distance = utility.calculate_total_distance(nnh_solution, px, py, depot)
-    # print("Nearest Neighbour VRP Heuristic Distance:", nnh_distance)
-    # utility.visualise_solution(nnh_solution, px, py, depot, "Nearest Neighbour Heuristic")
+    nnh_solution = nearest_neighbour_heuristic(px, py, demand, capacity, depot)
+    nnh_distance = utility.calculate_total_distance(nnh_solution, px, py, depot)
+    print("Nearest Neighbour VRP Heuristic Distance:", nnh_distance)
+    utility.visualise_solution(nnh_solution, px, py, depot, "Nearest Neighbour Heuristic")
 
     # Executing and visualizing the saving VRP heuristic.
     # Uncomment it to do your assignment!
@@ -62,39 +62,49 @@ def nearest_neighbour_heuristic(px, py, demand, capacity, depot):
     """
 
     # TODO - Implement the Nearest Neighbour Heuristic to generate VRP solutions.
-    Len = len(capacity)
+    Len = len(demand)
     routes = []
     eMat = utility.euclidean_matrix(px,py)
-
-    nodesLeft = Len - 1 #31
     visitedNodes = [depot]
+    demandLeft = demand
+    demandLeft[depot] = float('inf')
 
     while len(visitedNodes)< Len: # loop runs while nodes left to be visited
         oneRoute = []
         cap = capacity #100
-
         selNode = depot
+
         while (cap>0):
             ascEuc = np.unique(eMat[selNode]) #eucDistanc in ascending order
-            bestNNH = np.zeros(Len)
-            for i in ascEuc: # create the boolean of bestNNH
-                indexNo = np.where(ascEuc[i] == eMat[selNode])[0][0]
-                dc = demand[indexNo] < capacity #check T of F whether demand is less than cap
-                nodeStat = (indexNo in visitedNodes) # T if index visited
 
-                if (dc == True) & (nodeStat == False):
-                    bestNNH[indexNo] = True
-            indNNH = np.where(bestNNH == True)[0][0]
-            visitedNodes.append(indNNH)
-            oneRoute.append(indNNH)
-            cap -= demand[indNNH]
-            selNode = indNNH
+            for i in ascEuc: # create the boolean of bestNNH
+                indexList = np.where(i == eMat[selNode])[0]
+
+
+                indexNo = np.where(i == eMat[selNode])[0][0]
+                if indexNo in visitedNodes:
+                    continue
+                else:
+                    dc = (demand[indexNo] <= cap) #check T of F whether demand is less than cap
+                #nodeStat = (indexNo in visitedNodes) # T if index visited
+
+                if (dc == True): #& (nodeStat == False):
+                    visitedNodes.append(indexNo)
+                    oneRoute.append(indexNo)
+                    cap -= demand[indexNo]
+                    demandLeft[indexNo] = float('inf')
+                    selNode = indexNo
+                    break
+
+            if demandLeft.min() > cap:
+                break
+
 
         routes.append(oneRoute)
 
 
 
-    return None
+    return np.array(routes,dtype= object)
 
 
 def savings_heuristic(px, py, demand, capacity, depot):
