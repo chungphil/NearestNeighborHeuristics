@@ -34,6 +34,19 @@ def calculate_euclidean_distance(px, py, index1, index2):
 
     return eucVal
 
+def savings_matrix(px,py, depot):
+    eucMat = euclidean_matrix(px, py)
+
+    lvMat = eucMat[depot] + np.transpose([eucMat[depot]]) # L(vi, depot) + L(vj, depot)
+    savingMat = lvMat - eucMat
+
+    for i in range(len(savingMat)):
+        for j in range(len(savingMat)):
+            if j == i:
+                savingMat[i, j] = 0
+
+    return savingMat
+
 
 def calculate_total_distance(routes, px, py, depot):
 

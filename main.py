@@ -11,8 +11,8 @@ import utility
 def main():
 
     # Paths to the data and solution files.
-    vrp_file = "n32-k5.vrp"  # "data/n80-k10.vrp"
-    sol_file = "n32-k5.sol"  # "data/n80-k10.sol"
+    vrp_file = "n80-k10.vrp"  # "data/n80-k10.vrp"
+    sol_file = "n80-k10.sol"  # "data/n80-k10.sol"
 
     # Loading the VRP data file.
     px, py, demand, capacity, depot = loader.load_data(vrp_file)
@@ -42,10 +42,10 @@ def main():
     # Executing and visualizing the saving VRP heuristic.
     # Uncomment it to do your assignment!
     
-    # sh_solution = savings_heuristic(px, py, demand, capacity, depot)
-    # sh_distance = utility.calculate_total_distance(sh_solution, px, py, depot)
-    # print("Saving VRP Heuristic Distance:", sh_distance)
-    # utility.visualise_solution(sh_solution, px, py, depot, "Savings Heuristic")
+    sh_solution = savings_heuristic(px, py, demand, capacity, depot)
+    sh_distance = utility.calculate_total_distance(sh_solution, px, py, depot)
+    print("Saving VRP Heuristic Distance:", sh_distance)
+    utility.visualise_solution(sh_solution, px, py, depot, "Savings Heuristic")
 
 
 def nearest_neighbour_heuristic(px, py, demand, capacity, depot):
@@ -82,8 +82,9 @@ def nearest_neighbour_heuristic(px, py, demand, capacity, depot):
                 indexNo = np.where(i == eMat[selNode])[0][0]
                 if len(indexList) > 1:
                     for j in indexList:
-                        if j not in visitedNodes:
+                        if (j not in visitedNodes) & (demand[j] <= cap):
                             indexNo = j
+                            break
                         else:
                             continue
 
@@ -118,7 +119,15 @@ def savings_heuristic(px, py, demand, capacity, depot):
     :param depot: Depot.
     :return: List of vehicle routes (tours).
     """
+    sMat = utility.savings_matrix(px,py, depot) # 32 x 32, depot not taken out.
+    bestSave = np.unique(sMat)[::-1]
 
+    allroutes = [] #list of lists [[][]] with index numbers.
+    for i in range(len(px)):
+        if i == depot:
+            continue
+        else:
+            allroutes.append([i])
 
     return None
 
